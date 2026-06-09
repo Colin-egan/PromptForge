@@ -33,10 +33,5 @@
       ]
     }
   ],
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://your-backend-url.railway.app/api/:path*"
-    }
-  ]
+  "rewrites": []
 }
