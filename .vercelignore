@@ -1,0 +1,56 @@
+# Vercel ignore file - exclude backend and unnecessary files from frontend deployment
+
+# Backend directory
+backend/
+
+# Data and databases
+data/
+*.sqlite3
+*.db
+
+# Documentation (not needed in production)
+docs/
+examples/
+
+# Development files
+.env
+.env.local
+.env.development
+*.log
+*.md
+!README.md
+
+# Test files
+**/__tests__/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+coverage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Git
+.git/
+.gitignore
+.gitattributes

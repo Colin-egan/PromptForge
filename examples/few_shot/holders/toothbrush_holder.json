@@ -1,0 +1,10 @@
+{
+  "description": "A wall-mounted toothbrush holder with drainage holes",
+  "category": "holder",
+  "difficulty": "easy",
+  "validated": true,
+  "parameters": ["height", "diameter", "wall_thickness", "num_slots"],
+  "tags": ["bathroom", "wall-mount", "drainage"],
+  "print_notes": "Print upright with supports for the mounting holes. Layer height 0.2mm recommended.",
+  "code": "import cadquery as cq\n\n# Parameters\nheight = 100\ndiameter = 30\nwall_thickness = 3\nnum_slots = 4\nslot_diameter = 12\nmount_hole_diameter = 5\n\n# Create main cylinder\nholder = cq.Workplane(\"XY\").cylinder(height, diameter / 2)\n\n# Hollow out the interior\nholder = holder.faces(\">Z\").workplane().circle(diameter / 2 - wall_thickness).cutThruAll()\n\n# Create toothbrush slots\nfor i in range(num_slots):\n    angle = i * (360 / num_slots)\n    holder = (\n        holder.faces(\">Z\")\n        .workplane()\n        .transformed(rotate=(0, 0, angle))\n        .center(diameter / 4, 0)\n        .circle(slot_diameter / 2)\n        .cutBlind(-height + 10)\n    )\n\n# Add drainage holes at the bottom\nfor i in range(num_slots):\n    angle = i * (360 / num_slots)\n    holder = (\n        holder.faces(\"<Z\")\n        .workplane()\n        .transformed(rotate=(0, 0, angle))\n        .center(diameter / 4, 0)\n        .circle(2)\n        .cutThruAll()\n    )\n\n# Add mounting holes on the back\nholder = (\n    holder.faces(\">Y\")\n    .workplane(centerOption=\"CenterOfBoundBox\")\n    .rarray(1, height - 20, 1, 2)\n    .circle(mount_hole_diameter / 2)\n    .cutThruAll()\n)\n\nresult = holder"
+}

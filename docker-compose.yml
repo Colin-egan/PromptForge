@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # Frontend - Next.js Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    networks:
+      - promptforge-network
+    restart: unless-stopped
+
+  # Backend - FastAPI + Agent Orchestration
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - WATSONX_API_KEY=${WATSONX_API_KEY}
+      - WATSONX_PROJECT_ID=${WATSONX_PROJECT_ID}
+      - WATSONX_URL=${WATSONX_URL}
+      - GRANITE_MODEL_ID=${GRANITE_MODEL_ID:-ibm/granite-3-8b-instruct}
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+      - SANDBOX_IMAGE=promptforge-sandbox:latest
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock  # For sandbox container management
+    depends_on:
+      - chroma
+      - sandbox
+    networks:
+      - promptforge-network
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # CadQuery Sandbox - Isolated Code Execution
+  sandbox:
+    build:
+      context: ./backend/sandbox
+      dockerfile: Dockerfile
+    image: promptforge-sandbox:latest
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /output
+    mem_limit: 2g
+    cpus: 2
+    networks:
+      - promptforge-network
+    restart: "no"  # Sandbox containers are ephemeral
+
+  # Chroma - Vector Database
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    volumes:
+      - chroma-data:/chroma/chroma
+    networks:
+      - promptforge-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  chroma-data:
+    driver: local
+
+networks:
+  promptforge-network:
+    driver: bridge
+
+# Made with Bob

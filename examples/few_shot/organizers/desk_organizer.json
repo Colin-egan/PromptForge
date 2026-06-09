@@ -1,0 +1,10 @@
+{
+  "description": "A modular desk organizer with multiple compartments for pens, clips, and small items",
+  "category": "organizer",
+  "difficulty": "medium",
+  "validated": true,
+  "parameters": ["width", "depth", "height", "num_compartments", "wall_thickness"],
+  "tags": ["desk", "office", "storage", "modular"],
+  "print_notes": "Print upright. No supports needed. Can be printed in multiple colors for different compartments.",
+  "code": "import cadquery as cq\n\n# Parameters\nwidth = 150\ndepth = 80\nheight = 60\nnum_compartments = 3\nwall_thickness = 2\nbase_thickness = 3\n\n# Create base\norganizer = cq.Workplane(\"XY\").box(width, depth, base_thickness)\n\n# Create outer walls\nouter_walls = (\n    cq.Workplane(\"XY\")\n    .transformed(offset=(0, 0, height / 2))\n    .box(width, depth, height)\n    .faces(\">Z\")\n    .shell(-wall_thickness)\n)\n\norganizer = organizer.union(outer_walls)\n\n# Create compartment dividers\ncompartment_width = (width - (num_compartments + 1) * wall_thickness) / num_compartments\n\nfor i in range(1, num_compartments):\n    x_pos = -width / 2 + i * (compartment_width + wall_thickness) + wall_thickness / 2\n    divider = (\n        cq.Workplane(\"XY\")\n        .transformed(offset=(x_pos, 0, height / 2))\n        .box(wall_thickness, depth - 2 * wall_thickness, height - base_thickness)\n    )\n    organizer = organizer.union(divider)\n\n# Add rounded corners for aesthetics\norganizer = organizer.edges(\"|Z\").fillet(2)\n\nresult = organizer"
+}

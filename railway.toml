@@ -1,0 +1,24 @@
+# Railway configuration file
+# Defines services and their deployment settings
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "backend/Dockerfile"
+
+[deploy]
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+
+[services.backend]
+name = "promptforge-backend"
+
+[services.chroma]
+name = "promptforge-chroma"
+image = "chromadb/chroma:latest"
+
+[[services.chroma.volumes]]
+mountPath = "/chroma/chroma"
+name = "chroma-data"

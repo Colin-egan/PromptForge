@@ -1,0 +1,10 @@
+{
+  "description": "A simple phone stand with adjustable viewing angle",
+  "category": "holder",
+  "difficulty": "easy",
+  "validated": true,
+  "parameters": ["width", "depth", "height", "angle", "slot_width"],
+  "tags": ["desk", "phone", "stand"],
+  "print_notes": "Print flat on the base. No supports needed. Works best with 0.2mm layer height.",
+  "code": "import cadquery as cq\n\n# Parameters\nwidth = 80\ndepth = 80\nheight = 60\nangle = 65  # viewing angle in degrees\nslot_width = 12\nslot_depth = 3\nbase_thickness = 5\n\n# Create base\nbase = cq.Workplane(\"XY\").box(width, depth, base_thickness)\n\n# Create back support\nback = (\n    cq.Workplane(\"XY\")\n    .transformed(offset=(0, -depth / 4, height / 2))\n    .transformed(rotate=(angle, 0, 0))\n    .box(width, base_thickness, height)\n)\n\n# Combine base and back\nstand = base.union(back)\n\n# Create phone slot\nslot = (\n    cq.Workplane(\"XY\")\n    .transformed(offset=(0, depth / 4, base_thickness))\n    .box(slot_width, depth / 2, slot_depth * 2)\n)\n\nstand = stand.cut(slot)\n\n# Add cable management hole\nstand = (\n    stand.faces(\"<Y\")\n    .workplane(centerOption=\"CenterOfBoundBox\")\n    .circle(10)\n    .cutThruAll()\n)\n\nresult = stand"
+}

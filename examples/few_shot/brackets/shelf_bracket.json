@@ -1,0 +1,10 @@
+{
+  "description": "A sturdy L-shaped shelf bracket with mounting holes",
+  "category": "bracket",
+  "difficulty": "easy",
+  "validated": true,
+  "parameters": ["width", "depth", "thickness", "fillet_radius"],
+  "tags": ["wall-mount", "shelf", "support"],
+  "print_notes": "Print flat on the back face. Use 100% infill for maximum strength. PETG or ABS recommended for load-bearing applications.",
+  "code": "import cadquery as cq\n\n# Parameters\nwidth = 100\ndepth = 120\nthickness = 10\nfillet_radius = 15\nmount_hole_diameter = 6\n\n# Create vertical back plate\nback_plate = (\n    cq.Workplane(\"XZ\")\n    .rect(width, depth)\n    .extrude(thickness)\n)\n\n# Create horizontal shelf support\nshelf_support = (\n    cq.Workplane(\"XY\")\n    .rect(width, depth)\n    .extrude(thickness)\n)\n\n# Combine the two plates\nbracket = back_plate.union(shelf_support)\n\n# Add fillet to the inside corner for strength\nbracket = bracket.edges(\"|Y\").fillet(fillet_radius)\n\n# Add mounting holes to back plate\nbracket = (\n    bracket.faces(\">Y\")\n    .workplane(centerOption=\"CenterOfBoundBox\")\n    .rarray(width - 20, depth - 20, 2, 2)\n    .circle(mount_hole_diameter / 2)\n    .cutThruAll()\n)\n\n# Add countersink for screws\nbracket = (\n    bracket.faces(\">Y\")\n    .workplane(centerOption=\"CenterOfBoundBox\")\n    .rarray(width - 20, depth - 20, 2, 2)\n    .circle(mount_hole_diameter)\n    .cutBlind(-thickness / 2)\n)\n\nresult = bracket"
+}

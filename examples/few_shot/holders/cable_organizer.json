@@ -1,0 +1,10 @@
+{
+  "description": "A desk cable organizer with multiple slots for cable management",
+  "category": "holder",
+  "difficulty": "easy",
+  "validated": true,
+  "parameters": ["length", "width", "height", "num_slots", "slot_width"],
+  "tags": ["desk", "cable-management", "organizer"],
+  "print_notes": "Print flat on the bottom. No supports needed. Use flexible filament for better grip.",
+  "code": "import cadquery as cq\n\n# Parameters\nlength = 100\nwidth = 30\nheight = 20\nnum_slots = 5\nslot_width = 8\nslot_depth = 12\nbase_thickness = 3\n\n# Create base\norganizer = cq.Workplane(\"XY\").box(length, width, base_thickness)\n\n# Create back wall\nback_wall = (\n    cq.Workplane(\"XY\")\n    .transformed(offset=(0, -width / 2 + base_thickness / 2, height / 2))\n    .box(length, base_thickness, height)\n)\n\norganizer = organizer.union(back_wall)\n\n# Create cable slots\nslot_spacing = length / (num_slots + 1)\n\nfor i in range(num_slots):\n    x_pos = -length / 2 + (i + 1) * slot_spacing\n    slot = (\n        cq.Workplane(\"XY\")\n        .transformed(offset=(x_pos, -width / 2 + slot_depth / 2, height / 2))\n        .box(slot_width, slot_depth, height + 1)\n    )\n    organizer = organizer.cut(slot)\n\n# Add rounded edges for cable protection\norganizer = organizer.edges(\"|Z\").fillet(1)\n\n# Add anti-slip grooves on bottom\nfor i in range(3):\n    y_pos = -width / 4 + i * (width / 4)\n    organizer = (\n        organizer.faces(\"<Z\")\n        .workplane()\n        .center(0, y_pos)\n        .rect(length - 10, 2)\n        .cutBlind(-1)\n    )\n\nresult = organizer"
+}

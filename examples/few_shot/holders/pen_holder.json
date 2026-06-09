@@ -1,0 +1,10 @@
+{
+  "description": "A hexagonal pen holder with multiple compartments",
+  "category": "holder",
+  "difficulty": "easy",
+  "validated": true,
+  "parameters": ["height", "outer_radius", "wall_thickness", "num_compartments"],
+  "tags": ["desk", "office", "hexagonal", "multi-compartment"],
+  "print_notes": "Print upright. No supports needed. Recommended layer height 0.2mm.",
+  "code": "import cadquery as cq\nimport math\n\n# Parameters\nheight = 80\nouter_radius = 40\nwall_thickness = 2\nnum_compartments = 6\ninner_radius = 8\n\n# Create hexagonal outer shell\nholder = cq.Workplane(\"XY\").polygon(6, outer_radius * 2).extrude(height)\n\n# Create center compartment\nholder = holder.faces(\">Z\").workplane().circle(inner_radius).cutThruAll()\n\n# Create surrounding compartments in a circle\nfor i in range(num_compartments):\n    angle = i * (360 / num_compartments)\n    x = (outer_radius - inner_radius - wall_thickness) * math.cos(math.radians(angle))\n    y = (outer_radius - inner_radius - wall_thickness) * math.sin(math.radians(angle))\n    holder = (\n        holder.faces(\">Z\")\n        .workplane()\n        .center(x, y)\n        .circle(inner_radius)\n        .cutThruAll()\n    )\n\n# Add decorative chamfer on top edge\nholder = holder.faces(\">Z\").edges().chamfer(1)\n\nresult = holder"
+}
